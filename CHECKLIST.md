@@ -1,4 +1,4 @@
-# AITracker — Pre-Development Checklist
+# CassieAITracker — Pre-Development Checklist
 
 Everything that needs to be true before, and while, we build. Sections A and B block Phase 1. Section C are decisions only you can make. D and E can happen any time before Phase 5.
 
@@ -9,7 +9,7 @@ Everything that needs to be true before, and while, we build. Sections A and B b
 - [ ] **Read this first: your Claude Pro/Max subscription does not include API access.** They are separate products with separate billing. Nothing you have already paid for covers this app. You need a Console account with its own payment method.
 - [ ] Create an account at **console.anthropic.com** (same email is fine)
 - [ ] Add a payment method and **purchase starter credits** — $5 is months of use at the volumes in the plan
-- [ ] Create an API key: Console → API Keys → Create Key. Name it `aitracker`
+- [ ] Create an API key: Console → API Keys → Create Key. Name it `cassieaitracker`
 - [ ] **Copy the key immediately and store it in a password manager.** It is shown exactly once, and it is never displayed again
 - [ ] Set a monthly **spend limit** (Console → Settings → Limits). Suggest $10/month. This is your real protection against a leaked URL or a runaway loop
 - [ ] Turn on usage **email alerts** at ~50% of that limit
@@ -27,10 +27,10 @@ Everything that needs to be true before, and while, we build. Sections A and B b
 - [ ] Install Wrangler — `npm install -g wrangler` (or we use `npx wrangler` per-project)
 - [ ] Run `wrangler login` — opens a browser, authorizes the CLI against your Cloudflare account
 - [ ] Confirm **git** is installed — `git --version`
-- [ ] Create a **public** GitHub repo named `AITracker`
+- [ ] Create a **public** GitHub repo named `CassieAITracker`
   - Public is correct here: the repo holds only code. Your food log lives on the phone, and both secrets live in Cloudflare. Pages from a private repo also requires a paid GitHub plan.
 - [ ] Enable GitHub Pages: repo → Settings → Pages → Source: **Deploy from a branch** → `main` / `/ (root)`
-- [ ] Confirm the site is live at `https://cassie7511.github.io/AITracker/` over HTTPS
+- [ ] Confirm the site is live at `https://cassie7511.github.io/CassieAITracker/` over HTTPS
   - HTTPS is not optional — service workers and Add to Home Screen refuse to work without it. `*.github.io` gives it to you automatically.
 - [ ] Confirm this folder is where you want the project to live, or tell me where to move it
 
@@ -51,14 +51,14 @@ Everything that needs to be true before, and while, we build. Sections A and B b
 ## D. Assets to produce
 
 - [ ] **App icon**, 192×192 and 512×512 PNG, plus a 180×180 for iOS. Pink-on-black to match the site. I can generate these if you do not have something in mind
-- [ ] **App name** as it appears under the home-screen icon. Keep it under ~12 characters or iOS truncates it. "AITracker" fits
+- [ ] **App name** as it appears under the home-screen icon. Keep it under ~12 characters or iOS truncates it. "CassieAITracker" fits
 - [ ] **Theme color** for the phone status bar — `#0d0d0f` to match the background is the obvious pick
 
 ---
 
 ## E. Before the app lands on your phone
 
-- [ ] Note the Worker URL that `wrangler deploy` prints — `https://aitracker.<you>.workers.dev`
+- [ ] Note the Worker URL that `wrangler deploy` prints — `https://cassieaitracker.<you>.workers.dev`
 - [ ] Confirm the Worker's CORS `ALLOWED` origin is exactly `https://cassie7511.github.io`
   - No trailing slash, no path. A mismatch here fails as a confusing browser console error, not a server error.
 - [ ] Generate the shared secret (`X-App-Token`) and store it as a second Worker secret

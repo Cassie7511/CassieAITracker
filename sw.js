@@ -1,12 +1,12 @@
-/* AITracker service worker.
+/* CassieAITracker service worker.
 
    Every path here is relative, because GitHub Pages serves this from
-   /AITracker/ rather than a root domain. An absolute "/index.html" would
+   /CassieAITracker/ rather than a root domain. An absolute "/index.html" would
    resolve to the wrong place and the install would fail quietly.
 
    Bump CACHE on every deploy — that is what evicts the old shell. */
 
-const CACHE = "aitracker-v1";
+const CACHE = "cassieaitracker-v1";
 
 const SHELL = [
   "./",

@@ -1,4 +1,4 @@
-/* AITracker — Phase 3
+/* CassieAITracker — Phase 3
    Describe a meal, Claude returns calories/protein/carbs, it lands in the log.
    Everything persists locally; the only network call is to your own Worker. */
 
@@ -8,7 +8,7 @@ const UNDO_WINDOW_MS = 60 * 60 * 1000; // an hour to take back a "New day"
 
 const DEFAULT_API = location.hostname === "localhost" || location.hostname === "127.0.0.1"
   ? "http://127.0.0.1:8787"
-  : "https://aitracker.cassie11.workers.dev";
+  : "https://cassieaitracker.cassie11.workers.dev";
 
 /* ── IndexedDB ────────────────────────────────────────────────────────────
    IndexedDB rather than localStorage specifically for iOS: Safari clears
@@ -1114,14 +1114,14 @@ async function reopenDay(date) {
 async function exportJSON() {
   const payload = { exportedAt: new Date().toISOString(), currentDate, open: entries, history: days };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-  const filename = `aitracker-${localDate()}.json`;
+  const filename = `cassieaitracker-${localDate()}.json`;
 
   // On iOS the share sheet gives a real "Save to Files"; a plain download link
   // is unreliable there. Fall back to the link everywhere else.
   const file = new File([blob], filename, { type: "application/json" });
   if (navigator.canShare?.({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: "AITracker export" });
+      await navigator.share({ files: [file], title: "CassieAITracker export" });
       return;
     } catch (err) {
       if (err.name === "AbortError") return; // dismissed the sheet

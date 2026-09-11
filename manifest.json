@@ -1,6 +1,6 @@
 {
-  "name": "AITracker",
-  "short_name": "AITracker",
+  "name": "CassieAITracker",
+  "short_name": "CassieAITracker",
   "description": "Calorie and macro tracker",
   "start_url": "./",
   "scope": "./",

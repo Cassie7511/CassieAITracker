@@ -5,9 +5,9 @@
 <!-- viewport-fit=cover is what makes env(safe-area-inset-*) resolve on iPhone -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0d0d0f">
-<title>AITracker</title>
+<title>CassieAITracker</title>
 
-<!-- Relative hrefs throughout: Pages serves this from /AITracker/, and an
+<!-- Relative hrefs throughout: Pages serves this from /CassieAITracker/, and an
      absolute path would resolve off the site root and break the install. -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
@@ -17,7 +17,7 @@
      safe-area padding in style.css is what keeps content clear of it). -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="AITracker">
+<meta name="apple-mobile-web-app-title" content="CassieAITracker">
 <meta name="mobile-web-app-capable" content="yes">
 
 <link rel="stylesheet" href="tokens.css">
@@ -29,13 +29,13 @@
      Shown until a connection is verified. Nothing else renders behind it. -->
 <div id="gate" class="gate">
   <div class="gate-card">
-    <h1 class="gate-title">AI<span class="accent">Tracker</span></h1>
+    <h1 class="gate-title">Cassie<span class="accent">AI</span>Tracker</h1>
     <p class="gate-sub">Connect to your Claude Worker to start logging.</p>
 
     <form id="gate-form" autocomplete="off">
       <label class="setup-field">
         <span>Worker URL</span>
-        <input id="s-url" type="url" inputmode="url" placeholder="https://aitracker.you.workers.dev" required>
+        <input id="s-url" type="url" inputmode="url" placeholder="https://cassieaitracker.you.workers.dev" required>
       </label>
       <label class="setup-field">
         <span>App token</span>

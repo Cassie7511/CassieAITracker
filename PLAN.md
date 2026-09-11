@@ -1,4 +1,4 @@
-# AITracker — Development Plan
+# CassieAITracker — Development Plan
 
 A personal calorie & macro tracker. Type what you ate, Claude estimates Calories / Protein / Carbs, the day accumulates, "New Day" closes it out into a history with graphs.
 
@@ -11,13 +11,13 @@ A personal calorie & macro tracker. Type what you ate, Claude estimates Calories
 ```
 ┌──────────────────────────────────────────────────┐
 │  PHONE — installed PWA                           │
-│  cassie7511.github.io/AITracker/                 │
+│  cassie7511.github.io/CassieAITracker/                 │
 │  index.html · app.js · style.css                 │
 │  IndexedDB: today's entries + closed-day history │
 │  localStorage: X-App-Token (pasted once)         │
 │  Works offline for manual entry & history        │
 └───────────────────┬──────────────────────────────┘
-                    │  POST https://aitracker.<you>.workers.dev/api/analyze
+                    │  POST https://cassieaitracker.<you>.workers.dev/api/analyze
                     │  { kind: "text"|"photo", payload }
                     │  header: X-App-Token (shared secret)
                     │  ── cross-origin, so CORS applies ──
@@ -286,7 +286,7 @@ Rollover stays **manual only** — no midnight automation, by decision. The undo
 ### Phase 5 — Make it a real app
 `manifest.json`, icons, service worker, `navigator.storage.persist()`, offline shell. Add to Home Screen. Ends when it opens full-screen with its own icon and no browser chrome.
 
-**The subpath trap lives here.** GitHub Pages serves this at `/AITracker/`, not a root domain, so every path has to be relative — `start_url: "./"`, `scope: "./"`, a service worker registered with `{ scope: "./" }`, and relative icon paths in the manifest. Get one of these wrong and the install fails quietly: the app opens to the wrong URL, or the service worker refuses to control the page and offline never works. It is a one-time papercut, but it is the single most likely thing to eat an hour.
+**The subpath trap lives here.** GitHub Pages serves this at `/CassieAITracker/`, not a root domain, so every path has to be relative — `start_url: "./"`, `scope: "./"`, a service worker registered with `{ scope: "./" }`, and relative icon paths in the manifest. Get one of these wrong and the install fails quietly: the app opens to the wrong URL, or the service worker refuses to control the page and offline never works. It is a one-time papercut, but it is the single most likely thing to eat an hour.
 
 ### Phase 6 — Photos *(the secondary feature)*
 Two genuinely different jobs sharing one endpoint:
@@ -338,16 +338,16 @@ Carried over from the site: the `"Segoe UI", system-ui` stack, 8px card radius, 
 
 **6. The repo can be public; the data is not in it.** Your food log lives in IndexedDB on the phone and never touches the repo, and both secrets (`ANTHROPIC_API_KEY`, `X-App-Token`) live in Cloudflare. So the repo holds nothing sensitive — which is convenient, because GitHub Pages from a *private* repo requires a paid GitHub plan. Public repo, private data.
 
-**7. The Worker source is served by Pages too.** With the site served from the repo root, `worker/src/index.js` is fetchable at `cassie7511.github.io/AITracker/worker/src/index.js`. That is harmless — there are no secrets in the source, only references to `env.ANTHROPIC_API_KEY` — but worth knowing so it does not look alarming later.
+**7. The Worker source is served by Pages too.** With the site served from the repo root, `worker/src/index.js` is fetchable at `cassie7511.github.io/CassieAITracker/worker/src/index.js`. That is harmless — there are no secrets in the source, only references to `env.ANTHROPIC_API_KEY` — but worth knowing so it does not look alarming later.
 
 ---
 
 ## 7. Repo layout
 
-A separate `AITracker` repo, with **GitHub Pages serving from the root of `main`**. That is the least-friction setup — no `/docs` folder convention, no Actions workflow, just push and it is live at `cassie7511.github.io/AITracker/`.
+A separate `CassieAITracker` repo, with **GitHub Pages serving from the root of `main`**. That is the least-friction setup — no `/docs` folder convention, no Actions workflow, just push and it is live at `cassie7511.github.io/CassieAITracker/`.
 
 ```
-AITracker/             ← repo root IS the served site
+CassieAITracker/             ← repo root IS the served site
 ├── index.html         ← the PWA (Phase 2+)
 ├── app.js
 ├── style.css
@@ -364,4 +364,4 @@ AITracker/             ← repo root IS the served site
     └── package.json
 ```
 
-**The alternative** is dropping it into your existing `cassie7511.github.io` repo as `Projects/aitracker/`, matching the convention already there (`Projects/warehouse/`, `Projects/adstream/`…). That puts it on the portfolio page alongside your other work. A separate repo keeps a personal calorie tracker off that list and gives it its own deploy — which is why the plan defaults to it. Either way it is a subpath, so the relative-paths rule in Phase 5 applies the same.
+**The alternative** is dropping it into your existing `cassie7511.github.io` repo as `Projects/cassieaitracker/`, matching the convention already there (`Projects/warehouse/`, `Projects/adstream/`…). That puts it on the portfolio page alongside your other work. A separate repo keeps a personal calorie tracker off that list and gives it its own deploy — which is why the plan defaults to it. Either way it is a subpath, so the relative-paths rule in Phase 5 applies the same.
