@@ -1,0 +1,62 @@
+/* ---------------------------------------------------------------
+   AITracker design tokens
+   Palette lifted verbatim from https://cassie7511.github.io/style.css
+   black / gray / cherry blossom pink
+   --------------------------------------------------------------- */
+
+:root {
+  /* ---- inherited from the site ---- */
+  --bg:       #0d0d0f;   /* near-black background */
+  --surface:  #17171a;   /* card background */
+  --border:   #2a2a2f;   /* card borders */
+  --text:     #c9c9cf;   /* main gray text */
+  --muted:    #8a8a92;   /* dimmer gray */
+  --pink:     #f6b3c5;   /* cherry blossom */
+  --pink-dim: #d98ba1;   /* darker pink for hovers */
+  --white:    #ffffff;   /* headings */
+
+  /* ---- added for the tracker ---- */
+  --surface-2:  #1f1f23;  /* nested rows inside a card */
+  --success:    #9fd6b4;  /* on-target, desaturated to sit with the pink */
+  --warn:       #e8c99a;  /* approaching limit */
+  --over:       #e59a9a;  /* over target */
+
+  /* macro identity — used on bars, chart lines, legends */
+  --cal:      var(--pink);
+  --protein:  var(--pink-dim);
+  --carbs:    #b9a7d6;    /* muted lavender, same saturation family as the pink */
+  --fat:      var(--muted);
+
+  /* ---- type ---- */
+  --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  /* ---- shape (matches the site) ---- */
+  --radius: 8px;
+  --radius-sm: 6px;
+  --border-w: 1px;
+
+  /* ---- spacing ---- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 18px;
+  --sp-5: 24px;
+  --sp-6: 40px;
+
+  /* ---- mobile chrome ---- */
+  --tabbar-h: 56px;
+  --tap-min: 44px;                                    /* iOS minimum tap target */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  --transition: 0.15s ease;                           /* the site uses this everywhere */
+}
+
+/* The site is dark-only by design; keeping that rather than inventing a light
+   theme it has never had. Declared explicitly so the page never borrows a host
+   background. */
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+}

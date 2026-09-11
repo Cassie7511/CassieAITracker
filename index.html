@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- viewport-fit=cover is what makes env(safe-area-inset-*) resolve on iPhone -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0d0f">
+<title>AITracker</title>
+
+<!-- Relative hrefs throughout: Pages serves this from /AITracker/, and an
+     absolute path would resolve off the site root and break the install. -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+
+<!-- iOS standalone: no address bar, status bar drawn over the page (the
+     safe-area padding in style.css is what keeps content clear of it). -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AITracker">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ══ LOGIN GATE ══════════════════════════════════════════════════════════
+     Shown until a connection is verified. Nothing else renders behind it. -->
+<div id="gate" class="gate">
+  <div class="gate-card">
+    <h1 class="gate-title">AI<span class="accent">Tracker</span></h1>
+    <p class="gate-sub">Connect to your Claude Worker to start logging.</p>
+
+    <form id="gate-form" autocomplete="off">
+      <label class="setup-field">
+        <span>Worker URL</span>
+        <input id="s-url" type="url" inputmode="url" placeholder="https://aitracker.you.workers.dev" required>
+      </label>
+      <label class="setup-field">
+        <span>App token</span>
+        <input id="s-token" type="password" placeholder="X-App-Token" required>
+      </label>
+      <p id="gate-error" class="gate-error" hidden></p>
+      <button id="s-save" class="btn-primary" type="submit">Connect</button>
+    </form>
+  </div>
+</div>
+
+<!-- ══ APP ═════════════════════════════════════════════════════════════════ -->
+<div id="app" hidden>
+
+<!-- ══ TODAY ═══════════════════════════════════════════════════════════════ -->
+<main id="view-today" class="view">
+  <header class="topbar">
+    <div>
+      <p class="topbar-label" id="day-label">Today</p>
+      <h1 id="today-date">—</h1>
+    </div>
+    <button id="new-day" class="btn-ghost" type="button">New day</button>
+  </header>
+
+  <section class="totals" aria-label="Running totals">
+    <div class="cal">
+      <span id="t-cal" class="cal-num">0</span>
+      <span class="cal-unit">kcal</span>
+    </div>
+    <div class="macros">
+      <div class="macro"><span class="macro-num" id="t-protein">0</span><span class="macro-label">protein</span></div>
+      <div class="macro"><span class="macro-num" id="t-carbs">0</span><span class="macro-label">carbs</span></div>
+    </div>
+  </section>
+
+  <section class="composer">
+    <form id="ai-form" autocomplete="off">
+      <input id="f-text" class="f-text" type="text" placeholder="What did you eat?" maxlength="300" required>
+      <button id="ai-submit" class="btn-primary" type="submit">Log it</button>
+    </form>
+  </section>
+
+  <section class="entries">
+    <h2 class="section-label">Logged</h2>
+    <ul id="entry-list" class="entry-list"></ul>
+    <p id="entries-empty" class="empty">Nothing logged yet. Describe a meal above.</p>
+  </section>
+</main>
+
+<!-- ══ HISTORY ═════════════════════════════════════════════════════════════ -->
+<main id="view-history" class="view" hidden>
+  <header class="topbar">
+    <div>
+      <p class="topbar-label">History</p>
+      <h1>Past days</h1>
+    </div>
+    <button id="export" class="btn-ghost" type="button">Export</button>
+  </header>
+
+  <div id="history-charts" hidden>
+    <div class="ranges" role="group" aria-label="Time range">
+      <button class="range is-active" data-range="7" type="button">7 days</button>
+      <button class="range" data-range="30" type="button">30 days</button>
+      <button class="range" data-range="0" type="button">All</button>
+    </div>
+
+    <section class="stats" aria-label="Averages over the selected range">
+      <div class="stat">
+        <span class="stat-num" id="avg-cal">—</span>
+        <span class="stat-label">avg kcal</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num" id="avg-protein">—</span>
+        <span class="stat-label">avg protein</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num" id="avg-carbs">—</span>
+        <span class="stat-label">avg carbs</span>
+      </div>
+    </section>
+
+    <figure class="chart-card">
+      <figcaption class="chart-title">Calories per day</figcaption>
+      <div class="chart-wrap">
+        <svg id="chart-cal" class="chart" viewBox="0 0 340 150" role="img" aria-label="Calories per day"></svg>
+        <div class="tip" id="tip-cal" hidden></div>
+      </div>
+    </figure>
+
+    <figure class="chart-card">
+      <figcaption class="chart-title">
+        Protein &amp; carbs
+        <span class="legend">
+          <span class="key"><span class="swatch sw-protein"></span>protein</span>
+          <span class="key"><span class="swatch sw-carbs"></span>carbs</span>
+        </span>
+      </figcaption>
+      <div class="chart-wrap">
+        <svg id="chart-macro" class="chart" viewBox="0 0 340 150" role="img" aria-label="Protein and carbs per day, in grams"></svg>
+        <div class="tip" id="tip-macro" hidden></div>
+      </div>
+    </figure>
+  </div>
+
+  <section class="entries">
+    <h2 class="section-label" id="days-label" hidden>Banked days</h2>
+    <ul id="day-list" class="day-list"></ul>
+    <p id="history-empty" class="empty">No days banked yet. Tap <strong>New day</strong> on Today to close one out.</p>
+  </section>
+
+  <footer class="view-footer">
+    <button id="edit-connection" class="linkish" type="button">Claude connection</button>
+    <button id="sample-toggle" class="linkish" type="button">Add sample week</button>
+  </footer>
+</main>
+
+<!-- ══ FOODS ═══════════════════════════════════════════════════════════════ -->
+<main id="view-foods" class="view" hidden>
+  <header class="topbar">
+    <div>
+      <p class="topbar-label" id="foods-count">Library</p>
+      <h1>Saved foods</h1>
+    </div>
+  </header>
+
+  <section class="composer">
+    <p class="composer-hint no-top">
+      Foods you have saved are logged instantly from your own numbers — no lookup, no cost,
+      the same figures every time.
+    </p>
+    <form id="food-form" autocomplete="off">
+      <input id="fd-name" type="text" placeholder="e.g. 1 lb Trader Joes 85/15 ground beef" required maxlength="120">
+      <div class="f-grid">
+        <label class="f-field"><span>kcal</span><input id="fd-cal" type="number" inputmode="numeric" min="0" max="20000" step="1" required></label>
+        <label class="f-field"><span>protein</span><input id="fd-protein" type="number" inputmode="numeric" min="0" max="2000" step="1"></label>
+        <label class="f-field"><span>carbs</span><input id="fd-carbs" type="number" inputmode="numeric" min="0" max="2000" step="1"></label>
+      </div>
+      <button class="btn-primary" type="submit">Save food</button>
+    </form>
+  </section>
+
+  <section class="entries">
+    <h2 class="section-label">Saved foods</h2>
+    <ul id="food-list" class="entry-list"></ul>
+    <p id="foods-empty" class="empty">Nothing saved yet. Correct a logged entry and it gets remembered automatically.</p>
+  </section>
+</main>
+
+<!-- ══ TABS ════════════════════════════════════════════════════════════════ -->
+<nav class="tabbar">
+  <button class="tab is-active" data-view="today" type="button">Today</button>
+  <button class="tab" data-view="history" type="button">History</button>
+  <button class="tab" data-view="foods" type="button">Saved foods</button>
+</nav>
+
+</div><!-- /#app -->
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>

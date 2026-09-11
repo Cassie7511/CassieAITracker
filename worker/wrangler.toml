@@ -1,0 +1,15 @@
+name = "aitracker"
+main = "src/index.js"
+compatibility_date = "2026-09-10"
+compatibility_flags = ["nodejs_compat"]
+
+# Logs visible in the Cloudflare dashboard and via `npm run tail`.
+[observability]
+enabled = true
+
+# Secrets are NOT set here. They are set once, encrypted, with:
+#   wrangler secret put ANTHROPIC_API_KEY
+#   wrangler secret put APP_TOKEN
+#
+# For local dev (`npm run dev`) put them in worker/.dev.vars instead,
+# which is gitignored. See .dev.vars.example.
