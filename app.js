@@ -577,46 +577,146 @@ function renderCharts() {
     (d) => `P ${d.totals.protein_g}g · C ${d.totals.carbs_g}g`);
 }
 
+/* Hold a banked day to remove it. Pointer events cover touch and mouse alike;
+   moving more than a few pixels means you are scrolling, so the hold is off.
+   A touch scroll also fires pointercancel, which cancels it too. Right-click
+   (and Android's own long-press menu) arrive as contextmenu. */
+const HOLD_MS = 500;
+
+function onHold(el, fn) {
+  let timer = null;
+  let x = 0;
+  let y = 0;
+  const cancel = () => {
+    clearTimeout(timer);
+    timer = null;
+    el.classList.remove("is-holding");
+  };
+  el.addEventListener("pointerdown", (ev) => {
+    if (ev.pointerType === "mouse" && ev.button !== 0) return;
+    x = ev.clientX;
+    y = ev.clientY;
+    el.classList.add("is-holding");
+    timer = setTimeout(() => {
+      cancel();
+      navigator.vibrate?.(10);
+      fn();
+    }, HOLD_MS);
+  });
+  el.addEventListener("pointermove", (ev) => {
+    if (timer && Math.hypot(ev.clientX - x, ev.clientY - y) > 10) cancel();
+  });
+  el.addEventListener("pointerup", cancel);
+  el.addEventListener("pointercancel", cancel);
+  el.addEventListener("pointerleave", cancel);
+  el.addEventListener("contextmenu", (ev) => {
+    ev.preventDefault();
+    cancel();
+    fn();
+  });
+}
+
+function openDayConfirm(li, d) {
+  if (li.classList.contains("is-confirming")) return; // hold + contextmenu can both fire
+
+  // One confirmation at a time — put any other open one back to normal.
+  for (const other of document.querySelectorAll(".day.is-confirming")) {
+    const od = days.find((x) => x.date === other.dataset.date);
+    if (od) other.replaceWith(dayRow(od));
+  }
+
+  li.replaceChildren();
+  li.classList.add("is-confirming");
+
+  const text = document.createElement("div");
+  text.className = "day-confirm-text";
+  text.textContent = `Remove ${prettyDate(d.date)}?`;
+
+  const sub = document.createElement("div");
+  sub.className = "day-confirm-sub";
+  sub.textContent = `${d.totals.calories} kcal · ${d.entries.length} item${d.entries.length === 1 ? "" : "s"}`;
+
+  const actions = document.createElement("div");
+  actions.className = "day-confirm-actions";
+  const remove = document.createElement("button");
+  remove.type = "button";
+  remove.className = "btn-remove";
+  remove.textContent = "Remove";
+  remove.addEventListener("click", () => removeDay(d.date));
+  const cancel = document.createElement("button");
+  cancel.type = "button";
+  cancel.className = "linkish";
+  cancel.textContent = "Cancel";
+  cancel.addEventListener("click", () => li.replaceWith(dayRow(d)));
+  actions.append(remove, cancel);
+
+  li.append(text, sub, actions);
+  remove.focus();
+}
+
+async function removeDay(date) {
+  const gone = days.find((d) => d.date === date);
+  if (!gone) return;
+  await idb.del("days", date);
+  days = days.filter((d) => d.date !== date);
+  renderHistory();
+  toast(`Removed ${prettyDate(date)}`, "Undo", () => restoreDay(gone));
+}
+
+async function restoreDay(day) {
+  // A new day banked under the same date since then wins; never overwrite it.
+  if (days.some((d) => d.date === day.date)) {
+    toast("A day with that date exists now — not restored.");
+    return;
+  }
+  await idb.put("days", day);
+  days = [...days, day].sort((a, b) => b.date.localeCompare(a.date));
+  renderHistory();
+}
+
+function dayRow(d) {
+  const li = document.createElement("li");
+  li.className = "day";
+  li.dataset.date = d.date;
+  onHold(li, () => openDayConfirm(li, d));
+
+  const head = document.createElement("div");
+  head.className = "day-head";
+  const date = document.createElement("span");
+  date.className = "day-date";
+  date.textContent = prettyDate(d.date);
+  if (d.sample) {
+    // Labelled so seeded days are never mistaken for something you logged.
+    const tag = document.createElement("span");
+    tag.className = "sample-tag";
+    tag.textContent = "sample";
+    date.append(" ", tag);
+  }
+  const cal = document.createElement("span");
+  cal.className = "day-cal";
+  cal.textContent = `${d.totals.calories} kcal`;
+  head.append(date, cal);
+
+  const macros = document.createElement("div");
+  macros.className = "day-macros";
+  for (const text of [
+    `protein ${d.totals.protein_g}g`,
+    `carbs ${d.totals.carbs_g}g`,
+    `${d.entries.length} item${d.entries.length === 1 ? "" : "s"}`,
+  ]) {
+    const span = document.createElement("span");
+    span.textContent = text;
+    macros.append(span);
+  }
+
+  li.append(head, macros);
+  return li;
+}
+
 function renderHistory() {
   const list = $("day-list");
   list.replaceChildren();
-
-  for (const d of days) {
-    const li = document.createElement("li");
-    li.className = "day";
-
-    const head = document.createElement("div");
-    head.className = "day-head";
-    const date = document.createElement("span");
-    date.className = "day-date";
-    date.textContent = prettyDate(d.date);
-    if (d.sample) {
-      // Labelled so seeded days are never mistaken for something you logged.
-      const tag = document.createElement("span");
-      tag.className = "sample-tag";
-      tag.textContent = "sample";
-      date.append(" ", tag);
-    }
-    const cal = document.createElement("span");
-    cal.className = "day-cal";
-    cal.textContent = `${d.totals.calories} kcal`;
-    head.append(date, cal);
-
-    const macros = document.createElement("div");
-    macros.className = "day-macros";
-    for (const text of [
-      `protein ${d.totals.protein_g}g`,
-      `carbs ${d.totals.carbs_g}g`,
-      `${d.entries.length} item${d.entries.length === 1 ? "" : "s"}`,
-    ]) {
-      const span = document.createElement("span");
-      span.textContent = text;
-      macros.append(span);
-    }
-
-    li.append(head, macros);
-    list.append(li);
-  }
+  for (const d of days) list.append(dayRow(d));
 
   $("history-empty").hidden = days.length > 0;
   $("days-label").hidden = days.length === 0;
@@ -995,13 +1095,14 @@ async function logByText(text) {
 }
 
 /* ── photos ──────────────────────────────────────────────────────────────────
-   Two jobs on the same endpoint: a plate of food (portion estimate) and a
-   nutrition facts label (transcription). Images are shrunk on the phone first —
-   a 12 MP camera shot would be slow on cell data and cost several times more in
-   image tokens for no gain. Labels get a larger size because small print has to
-   stay legible; a plate does not need the extra detail. */
+   One camera button. The picture may be a plate of food (portion estimate) or a
+   nutrition facts label (transcription); the Worker's photo prompt handles both.
+   Images are shrunk on the phone first — a 12 MP camera shot would be slow on
+   cell data and cost several times more in image tokens for no gain. 1568px is
+   the size at which label small print stays legible. ("label" remains only so
+   entries created by the old label button can still be retried.) */
 
-const PHOTO_MAX_EDGE = { photo: 1024, label: 1568 };
+const PHOTO_MAX_EDGE = { photo: 1568, label: 1568 };
 const THUMB_EDGE = 96;
 
 function drawScaled(img, w, h, maxEdge, quality) {
@@ -1369,15 +1470,14 @@ async function init() {
     await logByText(text);
   });
 
-  for (const input of [$("f-photo"), $("f-label")]) {
-    input.addEventListener("change", async () => {
-      const file = input.files?.[0];
-      input.value = ""; // so picking the same photo again still fires "change"
-      if (!file) return;
-      $("f-text").blur();
-      await logByPhoto(file, input.dataset.kind);
-    });
-  }
+  $("f-photo").addEventListener("change", async () => {
+    const input = $("f-photo");
+    const file = input.files?.[0];
+    input.value = ""; // so picking the same photo again still fires "change"
+    if (!file) return;
+    $("f-text").blur();
+    await logByPhoto(file, "photo");
+  });
 
   $("food-form").addEventListener("submit", async (ev) => {
     ev.preventDefault();

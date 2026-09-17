@@ -44,8 +44,9 @@ const SYSTEM = `You estimate nutrition for a personal food log. Given a descript
 const KIND_PROMPTS = {
   text: "Food eaten:",
 
+  // The app has one camera button, so a photo may be a meal or a label.
   photo:
-    "This image shows a plate or portion of food. Identify what you see, estimate portions from visual cues — plate and utensil size, hands, packaging — and return the combined total.",
+    "This image shows food, packaged food, or a nutrition facts label. If a nutrition facts label is legible, read the printed values rather than estimating, and use one serving unless told otherwise. Otherwise identify what you see, estimate portions from visual cues — plate and utensil size, hands, packaging — and return the combined total.",
 
   label:
     "This image shows a nutrition facts label. Read the printed values rather than estimating. Check serving size against servings per container: if the whole package was eaten and the label is per-serving, multiply accordingly.",

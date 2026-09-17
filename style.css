@@ -159,24 +159,49 @@ body {
   margin-bottom: var(--sp-5);
 }
 
-#ai-form { display: flex; flex-direction: column; gap: var(--sp-3); }
+/* Text box, camera, enter — one line. */
+#ai-form { display: flex; align-items: stretch; gap: var(--sp-2); }
 
-.f-text { font-size: 16px; }
+.f-text { font-size: 16px; flex: 1; min-width: 0; }
 
-.photo-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--sp-3);
-  margin-top: var(--sp-3);
-}
-.photo-btn {
+.icon-btn {
+  flex-shrink: 0;
+  width: var(--tap-min);
+  min-height: var(--tap-min);
   display: flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition),
+              border-color var(--transition);
 }
-/* Keyboard focus lands on the hidden input; show it on the visible button. */
-.photo-btn:focus-within { outline: 2px solid var(--pink); outline-offset: 2px; }
+.icon-btn svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.icon-btn-ghost {
+  color: var(--pink);
+  background: transparent;
+  border: var(--border-w) solid var(--pink-dim);
+}
+.icon-btn-ghost:active { background: var(--pink); color: var(--bg); }
+/* Keyboard focus lands on the hidden file input; show it on the visible icon.
+   :focus-visible, not :focus-within — a tap must not leave a ring behind. */
+.icon-btn-ghost:has(:focus-visible) { outline: 2px solid var(--pink); outline-offset: 2px; }
+
+.icon-btn-primary {
+  color: var(--bg);
+  background: var(--pink);
+  border: var(--border-w) solid var(--pink);
+}
+.icon-btn-primary:active { background: var(--pink-dim); border-color: var(--pink-dim); }
 
 /* Hidden but still focusable and clickable through its <label> — display:none
    would drop it from the tab order. */
@@ -628,7 +653,40 @@ input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; marg
 
 /* ── history ──────────────────────────────────────────────────────────── */
 
-.day { flex-direction: column; align-items: stretch; gap: var(--sp-2); }
+.day {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--sp-2);
+  /* Hold-to-remove: stop iOS from selecting text or popping its callout. */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.day.is-holding { border-color: var(--pink-dim); }
+.day.is-confirming { border-color: var(--over); }
+
+.day-confirm-text { color: var(--white); font-size: 0.95rem; }
+.day-confirm-sub { color: var(--muted); font-size: 0.8rem; }
+.day-confirm-actions { display: flex; align-items: center; gap: var(--sp-4); }
+.day-confirm-actions .linkish { margin-top: 0; }
+
+.btn-remove {
+  font-family: inherit;
+  font-size: 0.88rem;
+  color: var(--over);
+  background: transparent;
+  border: var(--border-w) solid var(--over);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--sp-4);
+  min-height: var(--tap-min);
+  cursor: pointer;
+}
+
+.section-hint {
+  font-weight: 400;
+  letter-spacing: 0.4px;
+  text-transform: none;
+}
 
 .day-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-3); }
 .day-date { color: var(--white); font-size: 0.95rem; }
