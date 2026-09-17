@@ -29,7 +29,7 @@
      Shown until a connection is verified. Nothing else renders behind it. -->
 <div id="gate" class="gate">
   <div class="gate-card">
-    <h1 class="gate-title">Cassie<span class="accent">AI</span>Tracker</h1>
+    <h1 class="gate-title">Cassie's CalTracker<span class="accent">AI</span></h1>
     <p class="gate-sub">Connect to your Claude Worker to start logging.</p>
 
     <form id="gate-form" autocomplete="off">
@@ -76,6 +76,20 @@
       <input id="f-text" class="f-text" type="text" placeholder="What did you eat?" maxlength="300" required>
       <button id="ai-submit" class="btn-primary" type="submit">Log it</button>
     </form>
+
+    <!-- No `capture` attribute on purpose: with it, iOS opens the camera only;
+         without it, the sheet offers Take Photo *and* Photo Library. -->
+    <div class="photo-row">
+      <label class="btn-secondary photo-btn">
+        <input id="f-photo" class="visually-hidden" type="file" accept="image/*" data-kind="photo">
+        Food photo
+      </label>
+      <label class="btn-secondary photo-btn">
+        <input id="f-label" class="visually-hidden" type="file" accept="image/*" data-kind="label">
+        Nutrition label
+      </label>
+    </div>
+    <p class="composer-hint">Anything typed above is sent with a photo as a note, e.g. "ate half" or "2 servings".</p>
   </section>
 
   <section class="entries">

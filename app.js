@@ -132,6 +132,14 @@ function entryRow(e) {
   li.className = "entry";
   if (e.status) li.classList.add(`is-${e.status}`);
 
+  if (e.thumb) {
+    const img = document.createElement("img");
+    img.className = "entry-thumb";
+    img.src = e.thumb; // a data: URL this app generated, never a remote address
+    img.alt = "";
+    li.append(img);
+  }
+
   const main = document.createElement("div");
   main.className = "entry-main";
 
@@ -254,8 +262,11 @@ function openEditor(li, e) {
 
     // A correction is the most reliable signal there is about what a food
     // actually contains — remember it so this is the last time you fix it.
+    // Not for photos: the numbers belong to that picture, and the row's name
+    // ("Food photo", or a note like "ate half") is no key for a future meal.
+    const isPhoto = updated.source === "ai-photo" || updated.source === "ai-label";
     const label = (updated.raw || updated.name || "").trim();
-    if (label) {
+    if (label && !isPhoto) {
       await saveFood({ label, ...updated });
       toast("Remembered — next time this logs instantly.");
     }
@@ -983,14 +994,109 @@ async function logByText(text) {
   }
 }
 
+/* ── photos ──────────────────────────────────────────────────────────────────
+   Two jobs on the same endpoint: a plate of food (portion estimate) and a
+   nutrition facts label (transcription). Images are shrunk on the phone first —
+   a 12 MP camera shot would be slow on cell data and cost several times more in
+   image tokens for no gain. Labels get a larger size because small print has to
+   stay legible; a plate does not need the extra detail. */
+
+const PHOTO_MAX_EDGE = { photo: 1024, label: 1568 };
+const THUMB_EDGE = 96;
+
+function drawScaled(img, w, h, maxEdge, quality) {
+  const scale = Math.min(1, maxEdge / Math.max(w, h));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(w * scale));
+  canvas.height = Math.max(1, Math.round(h * scale));
+  const ctx = canvas.getContext("2d");
+  // JPEG has no alpha; without a fill, a transparent PNG comes out black.
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", quality);
+}
+
+// Decoded through <img> rather than createImageBitmap: <img> honours the EXIF
+// rotation on every current browser, so an upright phone photo stays upright.
+async function prepareImage(file, kind) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const w = img.naturalWidth;
+    const h = img.naturalHeight;
+    const full = drawScaled(img, w, h, PHOTO_MAX_EDGE[kind], 0.85);
+    return {
+      data: full.slice(full.indexOf(",") + 1), // the Worker wants bare base64
+      thumb: drawScaled(img, w, h, THUMB_EDGE, 0.7),
+    };
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+function photoRequest(e) {
+  return analyze(e.image, e.kind, {
+    media_type: "image/jpeg",
+    ...(e.note ? { note: e.note } : {}),
+  });
+}
+
+async function logByPhoto(file, kind) {
+  let prepared;
+  try {
+    prepared = await prepareImage(file, kind);
+  } catch {
+    // Most often a HEIC file on a desktop browser that cannot decode it.
+    toast("Couldn't read that image — try a JPEG or PNG.");
+    return;
+  }
+
+  // Whatever is in the text box travels with the photo as a note.
+  const note = $("f-text").value.trim();
+  $("f-text").value = "";
+
+  const pending = {
+    id: uuid(),
+    ts: Date.now(),
+    source: kind === "label" ? "ai-label" : "ai-photo",
+    kind,
+    raw: note,
+    note,
+    name: note || (kind === "label" ? "Nutrition label" : "Food photo"),
+    thumb: prepared.thumb,
+    image: prepared.data, // kept only until the result lands, so Retry still works
+    calories: 0, protein_g: 0, carbs_g: 0,
+    edited: false,
+    status: "pending",
+  };
+
+  entries.push(pending);
+  await idb.put("entries", pending);
+  renderEntries();
+
+  try {
+    const result = await photoRequest(pending);
+    await resolvePending(pending.id, result);
+  } catch (err) {
+    await failPending(pending.id, err.message);
+  }
+}
+
 async function resolvePending(id, result) {
   const pending = entries.find((e) => e.id === id);
   if (!pending) return; // deleted while in flight
 
+  // The full-size image was only needed for the request. Dropping it keeps
+  // banked days and exports small; the thumbnail stays.
+  const { image, ...kept } = pending;
+
   // One submission, one row. Claude returns the combined total for whatever was
   // described, so "salad and a coke" is a single line rather than six.
   const done = {
-    ...pending,
+    ...kept,
     calories: int(result.calories),
     protein_g: int(result.protein_g),
     carbs_g: int(result.carbs_g),
@@ -1023,7 +1129,7 @@ async function retryEntry(id) {
   renderEntries();
 
   try {
-    const result = await analyze(again.raw);
+    const result = again.image ? await photoRequest(again) : await analyze(again.raw);
     await resolvePending(id, result);
   } catch (err) {
     await failPending(id, err.message);
@@ -1262,6 +1368,16 @@ async function init() {
     $("f-text").blur(); // drop the iOS keyboard so the new row is visible
     await logByText(text);
   });
+
+  for (const input of [$("f-photo"), $("f-label")]) {
+    input.addEventListener("change", async () => {
+      const file = input.files?.[0];
+      input.value = ""; // so picking the same photo again still fires "change"
+      if (!file) return;
+      $("f-text").blur();
+      await logByPhoto(file, input.dataset.kind);
+    });
+  }
 
   $("food-form").addEventListener("submit", async (ev) => {
     ev.preventDefault();

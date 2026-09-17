@@ -163,6 +163,45 @@ body {
 
 .f-text { font-size: 16px; }
 
+.photo-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+}
+.photo-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+/* Keyboard focus lands on the hidden input; show it on the visible button. */
+.photo-btn:focus-within { outline: 2px solid var(--pink); outline-offset: 2px; }
+
+/* Hidden but still focusable and clickable through its <label> — display:none
+   would drop it from the tab order. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Thumbnail on photo entries, so a "Food photo" row is recognisable later. */
+.entry-thumb {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: var(--border-w) solid var(--border);
+}
+
 /* ── login gate ───────────────────────────────────────────────────────── */
 
 .gate {

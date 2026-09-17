@@ -6,7 +6,7 @@
 
    Bump CACHE on every deploy — that is what evicts the old shell. */
 
-const CACHE = "cassieaitracker-v2";
+const CACHE = "cassieaitracker-v3";
 
 const SHELL = [
   "./",

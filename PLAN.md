@@ -288,13 +288,19 @@ Rollover stays **manual only** — no midnight automation, by decision. The undo
 
 **The subpath trap lives here.** GitHub Pages serves this at `/CassieAITracker/`, not a root domain, so every path has to be relative — `start_url: "./"`, `scope: "./"`, a service worker registered with `{ scope: "./" }`, and relative icon paths in the manifest. Get one of these wrong and the install fails quietly: the app opens to the wrong URL, or the service worker refuses to control the page and offline never works. It is a one-time papercut, but it is the single most likely thing to eat an hour.
 
-### Phase 6 — Photos *(the secondary feature)*
+### Phase 6 — Photos *(the secondary feature)* ✅ *built*
 Two genuinely different jobs sharing one endpoint:
 
-- **Nutrition-label photo** → transcription. High accuracy, easy win. Build this one first.
-- **Plate-of-food photo** → portion estimation from pixels. Much less accurate; lean hard on `confidence: "low"` and always surface assumptions so you can correct them.
+- **Nutrition-label photo** → transcription. High accuracy, easy win.
+- **Plate-of-food photo** → portion estimation from pixels. Much less accurate — treat the number as a starting point and tap to correct it.
 
-Client-side resize to ~1024px before upload — keeps image tokens (and cost) down and makes uploads fast on cell data.
+Two buttons under the text box, **Food photo** and **Nutrition label**. No `capture` attribute on the file inputs, so iOS offers both *Take Photo* and *Photo Library*.
+
+- **Resize on the phone first.** Food photos go up at 1024px on the long edge (~1,050 image tokens, about +$0.002 a call); labels at 1568px (~2,450 tokens, about +$0.005) because small print has to stay legible. Always re-encoded as JPEG, flattened onto white so a transparent PNG does not arrive black.
+- **Decoded through `<img>`, not `createImageBitmap`,** so EXIF rotation is honoured and an upright phone photo stays upright.
+- **The text box becomes a note.** Anything typed before tapping a photo button is sent as `note` ("ate half", "2 servings") and names the row — the one thing a picture cannot show is how much was eaten. The Worker appends it to the kind prompt, capped at 300 characters.
+- **The full image lives on the entry only until the result lands,** so Retry can resend it; after that only a ~1 KB thumbnail is kept, so banked days and exports stay small.
+- **Corrections to photo entries are not remembered as saved foods** — the numbers belong to that picture, and "Food photo" is no key for a future meal.
 
 ---
 

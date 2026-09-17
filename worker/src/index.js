@@ -144,9 +144,15 @@ export default {
       if (payload.length > MAX_IMAGE_BYTES) {
         return json({ error: "Image too large — resize before sending" }, 413, origin);
       }
+      // Optional note typed alongside the photo ("ate half", "2 servings") —
+      // the one thing a picture cannot show is how much of it was eaten.
+      const note = typeof body.note === "string" ? body.note.trim().slice(0, 300) : "";
+      const instruction = note
+        ? `${KIND_PROMPTS[kind]}\n\nNote from the person logging this: ${note}`
+        : KIND_PROMPTS[kind];
       content = [
         { type: "image", source: { type: "base64", media_type, data: payload } },
-        { type: "text", text: KIND_PROMPTS[kind] },
+        { type: "text", text: instruction },
       ];
     }
 
