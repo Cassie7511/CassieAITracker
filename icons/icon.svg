@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- App icon source; the PNGs in this folder are rendered from it.
+       Torii gate, flat and minimal, in the app's black and pink.
+       Kept inside the maskable safe zone: every point sits within 205px (40%)
+       of the centre, so Android's round and squircle masks never clip it. -->
+  <rect width="512" height="512" fill="#0d0d0f"/>
+  <g transform="translate(256 259) scale(0.88) translate(-256 -259)">
+    <g fill="#f6b3c5">
+      <!-- kasagi: top lintel, tips swept up -->
+      <path d="M80 116 C146 148 366 148 432 116 L424 150 C356 170 156 170 88 150 Z"/>
+      <!-- shimaki: narrower beam tucked under the kasagi -->
+      <rect x="100" y="152" width="312" height="24"/>
+      <!-- nuki: tie beam, runs past the pillars -->
+      <rect x="104" y="220" width="304" height="26"/>
+      <!-- hashira: pillars, splayed slightly outward -->
+      <path d="M146 170 L186 170 L180 398 L136 398 Z"/>
+      <path d="M326 170 L366 170 L376 398 L332 398 Z"/>
+      <!-- kamebara: base blocks -->
+      <rect x="126" y="382" width="62" height="20" rx="2"/>
+      <rect x="324" y="382" width="62" height="20" rx="2"/>
+    </g>
+    <!-- gakuzuka: the plaque, in the icon's darker accent pink -->
+    <rect x="236" y="176" width="40" height="44" fill="#d98ba1"/>
+  </g>
+</svg>
