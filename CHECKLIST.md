@@ -1,4 +1,4 @@
-# CassieAITracker — Pre-Development Checklist
+# Cassie's CalTrackerAI — Pre-Development Checklist
 
 Everything that needs to be true before, and while, we build. Sections A and B block Phase 1. Section C are decisions only you can make. D and E can happen any time before Phase 5.
 

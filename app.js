@@ -1,4 +1,4 @@
-/* CassieAITracker — Phase 3
+/* Cassie's CalTrackerAI — Phase 3
    Describe a meal, Claude returns calories/protein/carbs, it lands in the log.
    Everything persists locally; the only network call is to your own Worker. */
 
@@ -1114,14 +1114,14 @@ async function reopenDay(date) {
 async function exportJSON() {
   const payload = { exportedAt: new Date().toISOString(), currentDate, open: entries, history: days };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-  const filename = `cassieaitracker-${localDate()}.json`;
+  const filename = `caltrackerai-${localDate()}.json`;
 
   // On iOS the share sheet gives a real "Save to Files"; a plain download link
   // is unreliable there. Fall back to the link everywhere else.
   const file = new File([blob], filename, { type: "application/json" });
   if (navigator.canShare?.({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: "CassieAITracker export" });
+      await navigator.share({ files: [file], title: "Cassie's CalTrackerAI export" });
       return;
     } catch (err) {
       if (err.name === "AbortError") return; // dismissed the sheet

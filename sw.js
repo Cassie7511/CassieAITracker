@@ -1,4 +1,4 @@
-/* CassieAITracker service worker.
+/* Cassie's CalTrackerAI service worker.
 
    Every path here is relative, because GitHub Pages serves this from
    /CassieAITracker/ rather than a root domain. An absolute "/index.html" would
@@ -6,7 +6,7 @@
 
    Bump CACHE on every deploy — that is what evicts the old shell. */
 
-const CACHE = "cassieaitracker-v1";
+const CACHE = "cassieaitracker-v2";
 
 const SHELL = [
   "./",

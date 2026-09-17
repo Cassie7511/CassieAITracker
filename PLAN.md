@@ -1,4 +1,4 @@
-# CassieAITracker — Development Plan
+# Cassie's CalTrackerAI — Development Plan
 
 A personal calorie & macro tracker. Type what you ate, Claude estimates Calories / Protein / Carbs, the day accumulates, "New Day" closes it out into a history with graphs.
 
